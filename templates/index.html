@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autopose - Protein Docking Animation Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .file-input-group {
+            margin-bottom: 20px;
+        }
+
+        .file-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #bdc3c7;
+            border-radius: 10px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input:hover {
+            border-color: #3498db;
+            background: #ecf0f1;
+        }
+
+        .file-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .representation-section {
+            margin-bottom: 30px;
+        }
+
+        .representation-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .representation-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .representation-option {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #bdc3c7;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .representation-option:hover {
+            border-color: #3498db;
+            background: #ecf0f1;
+        }
+
+        .representation-option input[type="radio"] {
+            display: none;
+        }
+
+        .representation-option input[type="radio"]:checked + .option-content {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .option-content {
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .option-content h3 {
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .option-content p {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .generate-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .test-sample-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .test-sample-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .download-section {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .sample-results {
+            margin-top: 20px;
+        }
+
+        .sample-result {
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: white;
+        }
+
+        .sample-result.success {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .sample-result.failed {
+            border-color: #dc3545;
+            background: #fff8f8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+                            <h1>🧬 Autopose - Protein Docking Animation Generator</h1>
+            <p>Generate 1080p MP4 animations from PDB and DLG files</p>
+        </div>
+
+        <div class="content">
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="docking-engine-section">
+                    <label>Docking Engine</label>
+                    <div class="docking-engine-options">
+                        <div class="docking-engine-option">
+                            <input type="radio" id="engine_ad4" name="docking_engine" value="autodock4" checked>
+                            <label for="engine_ad4" class="option-content">
+                                <h3>AutoDock4</h3>
+                                <p>PDB + DLG</p>
+                            </label>
+                        </div>
+                        <div class="docking-engine-option">
+                            <input type="radio" id="engine_vina" name="docking_engine" value="vina">
+                            <label for="engine_vina" class="option-content">
+                                <h3>AutoDock Vina</h3>
+                                <p>PDB + PDBQT + Vina Output + Log</p>
+                            </label>
+                        </div>
+                        <div class="docking-engine-option">
+                            <input type="radio" id="engine_cluspro" name="docking_engine" value="cluspro">
+                            <label for="engine_cluspro" class="option-content">
+                                <h3>ClusPro</h3>
+                                <p>Protein-Protein Docking (Monomer + Models + Scores)</p>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vina-options-section" id="vina-options-section" style="display:none; margin-bottom: 30px;">
+                    <label for="vinaNumPoses">Number of Poses to Animate (N):</label>
+                    <input type="number" id="vinaNumPoses" name="vina_num_poses" min="1" max="20" value="2" style="width: 60px; margin-left: 10px;">
+                    <div style="margin-top: 10px;">
+                        <label><input type="radio" name="vina_pose_mode" value="separate" checked> Separate Videos</label>
+                        <label style="margin-left: 20px;"><input type="radio" name="vina_pose_mode" value="overlay"> Overlay (Transparency)</label>
+                    </div>
+                </div>
+
+                <div class="upload-section" id="ad4-upload-section">
+                    <div class="file-input-group">
+                        <label for="pdbFile">Protein Structure File (PDB)</label>
+                        <input type="file" id="pdbFile" name="pdb_file" class="file-input" accept=".pdb" required>
+                    </div>
+                    <div class="file-input-group">
+                        <label for="dlgFile">Docking Log File (DLG)</label>
+                        <input type="file" id="dlgFile" name="dlg_file" class="file-input" accept=".dlg" required>
+                    </div>
+                </div>
+
+                <div class="upload-section" id="vina-upload-section" style="display:none;">
+                    <div class="file-input-group">
+                        <label for="vinaPdbFile">Protein Structure File (PDB)</label>
+                        <input type="file" id="vinaPdbFile" name="vina_pdb_file" class="file-input" accept=".pdb">
+                    </div>
+                    <div class="file-input-group">
+                        <label for="vinaLigandFile">Ligand File (PDBQT)</label>
+                        <input type="file" id="vinaLigandFile" name="vina_ligand_file" class="file-input" accept=".pdbqt">
+                    </div>
+                    <div class="file-input-group">
+                        <label for="vinaOutputFile">Vina Output File (PDBQT)</label>
+                        <input type="file" id="vinaOutputFile" name="vina_output_file" class="file-input" accept=".pdbqt">
+                    </div>
+                    <div class="file-input-group">
+                        <label for="vinaLogFile">Vina Log File (TXT)</label>
+                        <input type="file" id="vinaLogFile" name="vina_log_file" class="file-input" accept=".txt">
+                    </div>
+                </div>
+
+                <div class="upload-section" id="cluspro-upload-section" style="display:none;">
+                    <div class="file-input-group">
+                        <label for="clusproMonomerFile">Monomer Structure File (PDB)</label>
+                        <input type="file" id="clusproMonomerFile" name="cluspro_monomer_file" class="file-input" accept=".pdb">
+                    </div>
+                    <div class="file-input-group">
+                        <label for="clusproModelsFiles">ClusPro Model Files (PDB)</label>
+                        <input type="file" id="clusproModelsFiles" name="cluspro_models_files" class="file-input" accept=".pdb" multiple>
+                        <small>Select multiple PDB files for different docking models</small>
+                    </div>
+                    <div class="file-input-group">
+                        <label for="clusproScoresFile">ClusPro Scores File (CSV)</label>
+                        <input type="file" id="clusproScoresFile" name="cluspro_scores_file" class="file-input" accept=".csv">
+                    </div>
+                    <div class="file-input-group">
+                        <label for="clusproNumModels">Number of Models to Animate:</label>
+                        <input type="number" id="clusproNumModels" name="cluspro_num_models" min="1" max="10" value="2" style="width: 60px; margin-left: 10px;">
+                    </div>
+                    <div class="file-input-group">
+                        <label for="clusproRepresentation">Visualization Style:</label>
+                        <select id="clusproRepresentation" name="cluspro_representation" style="width: 200px; margin-left: 10px;">
+                            <option value="cartoon">Cartoon</option>
+                            <option value="sticks">Sticks</option>
+                            <option value="surface">Surface</option>
+                            <option value="ribbon">Ribbon</option>
+                            <option value="spheres">Spheres</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="representation-section">
+                    <label>Visualization Style</label>
+                    <div class="representation-options">
+                        <div class="representation-option">
+                            <input type="radio" id="sticks" name="representation" value="sticks" checked>
+                            <label for="sticks" class="option-content">
+                                <h3>🔗 Sticks</h3>
+                                <p>Complete molecular bonds with element colors</p>
+                            </label>
+                        </div>
+                        <div class="representation-option">
+                            <input type="radio" id="ribbon" name="representation" value="ribbon">
+                            <label for="ribbon" class="option-content">
+                                <h3>🎀 Ribbon</h3>
+                                <p>Protein backbone and ligand ribbon representation</p>
+                            </label>
+                        </div>
+                        <div class="representation-option">
+                            <input type="radio" id="lines" name="representation" value="lines">
+                            <label for="lines" class="option-content">
+                                <h3>📏 Lines</h3>
+                                <p>Thin lines connecting atoms</p>
+                            </label>
+                        </div>
+                        <div class="representation-option">
+                            <input type="radio" id="spheres" name="representation" value="spheres">
+                            <label for="spheres" class="option-content">
+                                <h3>🔵 Spheres</h3>
+                                <p>Atoms as spheres with element colors</p>
+                            </label>
+                        </div>
+                        <div class="representation-option">
+                            <input type="radio" id="surface" name="representation" value="surface">
+                            <label for="surface" class="option-content">
+                                <h3>🌊 Surface</h3>
+                                <p>Molecular surface representation</p>
+                            </label>
+                        </div>
+                        <div class="representation-option">
+                            <input type="radio" id="cartoon" name="representation" value="cartoon">
+                            <label for="cartoon" class="option-content">
+                                <h3>🎭 Cartoon</h3>
+                                <p>Secondary structure cartoon representation</p>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="generate-btn" id="generateBtn">
+                    🎬 Generate Animation
+                </button>
+            </form>
+
+            <button class="test-sample-btn" id="testSampleBtn">
+                🧪 Test with Sample Files
+            </button>
+            <button class="test-sample-btn" id="testClusProBtn" style="margin-top: 10px;">
+                🧪 Test ClusPro Sample
+            </button>
+
+            <div class="status" id="status"></div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Generating animation... This may take a few minutes.</p>
+            </div>
+            <div class="download-section" id="downloadSection"></div>
+            <div class="sample-results" id="sampleResults"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('uploadForm');
+            const testBtn = document.getElementById('testSampleBtn');
+            const testClusProBtn = document.getElementById('testClusProBtn');
+            const status = document.getElementById('status');
+            const loading = document.getElementById('loading');
+            const downloadSection = document.getElementById('downloadSection');
+            const sampleResults = document.getElementById('sampleResults');
+            const generateBtn = document.getElementById('generateBtn');
+
+            // Handle representation selection
+            document.querySelectorAll('input[name="representation"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.querySelectorAll('.representation-option').forEach(option => {
+                        option.querySelector('.option-content').style.background = '';
+                        option.querySelector('.option-content').style.color = '';
+                        option.querySelector('.option-content').style.borderColor = '';
+                    });
+                    
+                    if (this.checked) {
+                        this.parentElement.querySelector('.option-content').style.background = '#3498db';
+                        this.parentElement.querySelector('.option-content').style.color = 'white';
+                        this.parentElement.querySelector('.option-content').style.borderColor = '#3498db';
+                    }
+                });
+            });
+
+            // Docking engine toggle
+            const ad4Section = document.getElementById('ad4-upload-section');
+            const vinaSection = document.getElementById('vina-upload-section');
+            const vinaOptionsSection = document.getElementById('vina-options-section');
+            const clusproSection = document.getElementById('cluspro-upload-section');
+            document.querySelectorAll('input[name="docking_engine"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'autodock4') {
+                        ad4Section.style.display = '';
+                        vinaSection.style.display = 'none';
+                        vinaOptionsSection.style.display = 'none';
+                        clusproSection.style.display = 'none';
+                        // Set required attributes
+                        document.getElementById('pdbFile').required = true;
+                        document.getElementById('dlgFile').required = true;
+                        document.getElementById('vinaPdbFile').required = false;
+                        document.getElementById('vinaLigandFile').required = false;
+                        document.getElementById('vinaOutputFile').required = false;
+                        document.getElementById('vinaLogFile').required = false;
+                        document.getElementById('clusproMonomerFile').required = false;
+                        document.getElementById('clusproModelsFiles').required = false;
+                        document.getElementById('clusproScoresFile').required = false;
+                    } else if (this.value === 'vina') {
+                        ad4Section.style.display = 'none';
+                        vinaSection.style.display = '';
+                        vinaOptionsSection.style.display = '';
+                        clusproSection.style.display = 'none';
+                        // Set required attributes
+                        document.getElementById('pdbFile').required = false;
+                        document.getElementById('dlgFile').required = false;
+                        document.getElementById('vinaPdbFile').required = true;
+                        document.getElementById('vinaLigandFile').required = true;
+                        document.getElementById('vinaOutputFile').required = true;
+                        document.getElementById('vinaLogFile').required = true;
+                        document.getElementById('clusproMonomerFile').required = false;
+                        document.getElementById('clusproModelsFiles').required = false;
+                        document.getElementById('clusproScoresFile').required = false;
+                    } else if (this.value === 'cluspro') {
+                        ad4Section.style.display = 'none';
+                        vinaSection.style.display = 'none';
+                        vinaOptionsSection.style.display = 'none';
+                        clusproSection.style.display = '';
+                        // Set required attributes
+                        document.getElementById('pdbFile').required = false;
+                        document.getElementById('dlgFile').required = false;
+                        document.getElementById('vinaPdbFile').required = false;
+                        document.getElementById('vinaLigandFile').required = false;
+                        document.getElementById('vinaOutputFile').required = false;
+                        document.getElementById('vinaLogFile').required = false;
+                        document.getElementById('clusproMonomerFile').required = true;
+                        document.getElementById('clusproModelsFiles').required = true;
+                        document.getElementById('clusproScoresFile').required = true;
+                    }
+                });
+            });
+
+            // Handle form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                const representation = formData.get('representation');
+                
+                showStatus('info', 'Starting animation generation...');
+                showLoading(true);
+                hideDownloadSection();
+                hideSampleResults();
+
+                const dockingEngine = document.querySelector('input[name="docking_engine"]:checked').value;
+                if (dockingEngine === 'vina') {
+                    formData.set('vina_num_poses', document.getElementById('vinaNumPoses').value);
+                    formData.set('vina_pose_mode', document.querySelector('input[name="vina_pose_mode"]:checked').value);
+                }
+
+                fetch('/generate_animation', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    showLoading(false);
+                    
+                    if (data.success) {
+                        showStatus('success', data.message);
+                        showDownloadSection(data.filename, data.download_url, data.results);
+                    } else {
+                        showStatus('error', data.error);
+                    }
+                })
+                .catch(error => {
+                    showLoading(false);
+                    showStatus('error', 'Network error: ' + error.message);
+                });
+            });
+
+            // Handle test sample
+            testBtn.addEventListener('click', function() {
+                showStatus('info', 'Testing with sample files...');
+                showLoading(true);
+                hideDownloadSection();
+                hideSampleResults();
+
+                fetch('/test_sample')
+                .then(response => response.json())
+                .then(data => {
+                    showLoading(false);
+                    
+                    if (data.success) {
+                        showStatus('success', data.message);
+                        showSampleResults(data.results);
+                    } else {
+                        showStatus('error', data.error);
+                    }
+                })
+                .catch(error => {
+                    showLoading(false);
+                    showStatus('error', 'Network error: ' + error.message);
+                });
+            });
+
+            testClusProBtn.addEventListener('click', function() {
+                showStatus('info', 'Testing ClusPro sample...');
+                showLoading(true);
+                hideDownloadSection();
+                hideSampleResults();
+
+                fetch('/test_sample_cluspro')
+                .then(response => response.json())
+                .then(data => {
+                    showLoading(false);
+                    
+                    if (data.success) {
+                        showStatus('success', data.message);
+                        showDownloadSection(data.filename, data.download_url);
+                    } else {
+                        showStatus('error', data.error);
+                    }
+                })
+                .catch(error => {
+                    showLoading(false);
+                    showStatus('error', 'Network error: ' + error.message);
+                });
+            });
+
+            function showStatus(type, message) {
+                status.className = `status ${type}`;
+                status.textContent = message;
+                status.style.display = 'block';
+            }
+
+            function showLoading(show) {
+                loading.style.display = show ? 'block' : 'none';
+                generateBtn.disabled = show;
+                testBtn.disabled = show;
+                testClusProBtn.disabled = show;
+            }
+
+            function showDownloadSection(filename, downloadUrl, results) {
+                if (results && Array.isArray(results)) {
+                    // Multiple videos (separate mode)
+                    let html = `<h3>✅ Multiple Animations Generated!</h3><ul style='text-align:left;'>`;
+                    results.forEach((result, idx) => {
+                        html += `<li><a href='${result.download_url}' class='download-btn' download>${result.filename}</a>`;
+                        if (result.score !== undefined && result.score !== null) {
+                            html += ` <span style='color:#888;'>(Score: ${result.score.toFixed(2)} kcal/mol)</span>`;
+                        }
+                        html += `</li>`;
+                    });
+                    html += `</ul>`;
+                    downloadSection.innerHTML = html;
+                } else {
+                    // Single video
+                    downloadSection.innerHTML = `
+                        <h3>✅ Animation Generated Successfully!</h3>
+                        <p>Your animation "${filename}" is ready for download.</p>
+                        <a href="${downloadUrl}" class="download-btn" download>
+                            📥 Download MP4
+                        </a>
+                    `;
+                }
+                downloadSection.style.display = 'block';
+            }
+
+            function hideDownloadSection() {
+                downloadSection.style.display = 'none';
+            }
+
+            function showSampleResults(results) {
+                sampleResults.innerHTML = '<h3>Sample Test Results:</h3>';
+                
+                results.forEach(result => {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = `sample-result ${result.status}`;
+                    
+                    if (result.status === 'success') {
+                        resultDiv.innerHTML = `
+                            <h4>✅ ${result.representation.toUpperCase()} Representation</h4>
+                            <p>File: ${result.filename}</p>
+                            <a href="${result.download_url}" class="download-btn" download>
+                                📥 Download
+                            </a>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <h4>❌ ${result.representation.toUpperCase()} Representation</h4>
+                            <p>Error: ${result.error}</p>
+                        `;
+                    }
+                    
+                    sampleResults.appendChild(resultDiv);
+                });
+                
+                sampleResults.style.display = 'block';
+            }
+
+            function hideSampleResults() {
+                sampleResults.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html> 
