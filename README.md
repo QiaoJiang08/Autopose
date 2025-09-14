@@ -13,8 +13,8 @@ A comprehensive web-based tool for generating MP4 video animations of protein-li
 ## 🛠️ Installation
 
 ```bash
-git clone https://github.com/yourusername/autopose.git
-cd autopose
+git clone https://github.com/QiaoJiang08/Autopose.git
+cd Autopose
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt

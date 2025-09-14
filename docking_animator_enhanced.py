@@ -13,7 +13,6 @@ from Bio.PDB.Polypeptide import is_aa
 from Bio.PDB.vectors import Vector
 from Bio.PDB.DSSP import DSSP
 import tempfile
-from moviepy.editor import VideoFileClip
 import subprocess
 
 class DockingAnimatorEnhanced:

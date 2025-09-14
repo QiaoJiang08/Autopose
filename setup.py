@@ -9,12 +9,12 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 setup(
     name="autopose",
     version="2.0.0",
-    author="Your Name",
-    author_email="your.email@example.com",
+    author="QiaoJiang08",
+    author_email="qiaojiang08@example.com",
     description="A comprehensive tool for generating MP4 video animations of protein docking results",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/autopose",
+    url="https://github.com/QiaoJiang08/Autopose",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
@@ -52,8 +52,8 @@ setup(
     },
     keywords="protein docking animation autodock vina cluspro molecular visualization",
     project_urls={
-        "Bug Reports": "https://github.com/yourusername/autopose/issues",
-        "Source": "https://github.com/yourusername/autopose",
-        "Documentation": "https://github.com/yourusername/autopose#readme",
+        "Bug Reports": "https://github.com/QiaoJiang08/Autopose/issues",
+        "Source": "https://github.com/QiaoJiang08/Autopose",
+        "Documentation": "https://github.com/QiaoJiang08/Autopose#readme",
     },
 )
