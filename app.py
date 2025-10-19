@@ -5,6 +5,8 @@ from werkzeug.utils import secure_filename
 from docking_animator_enhanced import DockingAnimatorEnhanced
 from cluspro_adapter import ClusProAdapter
 from cluspro_animator import ClusProAnimator
+from haddock_adapter import HADDOCKAdapter
+from haddock_animator import HADDOCKAnimator
 import numpy as np
 
 app = Flask(__name__)
@@ -201,6 +203,69 @@ def generate_animation():
                 
             except Exception as e:
                 return jsonify({'error': f'Error generating ClusPro animation: {str(e)}'}), 500
+        elif docking_engine == 'haddock':
+            # HADDOCK mode for protein-protein docking
+            haddock_monomer_file = request.files.get('haddock_monomer_file')
+            haddock_models_files = request.files.getlist('haddock_models_files')
+            haddock_cluster_ener_file = request.files.get('haddock_cluster_ener_file')
+            haddock_cluster_rmsd_file = request.files.get('haddock_cluster_rmsd_file')
+            haddock_num_models = int(request.form.get('haddock_num_models', 1))
+            haddock_representation = request.form.get('haddock_representation', 'cartoon')
+            
+            if not (haddock_monomer_file and haddock_models_files and 
+                   haddock_cluster_ener_file and haddock_cluster_rmsd_file):
+                return jsonify({'error': 'All HADDOCK files are required (monomer PDB, model PDBs, cluster_ener.txt, cluster_rmsd.txt)'}), 400
+            
+            # Save uploaded files
+            monomer_path = os.path.join(app.config['UPLOAD_FOLDER'], 
+                                       secure_filename(haddock_monomer_file.filename or 'monomer.pdb'))
+            haddock_monomer_file.save(monomer_path)
+            
+            model_paths = []
+            for model_file in haddock_models_files:
+                model_path = os.path.join(app.config['UPLOAD_FOLDER'], 
+                                         secure_filename(model_file.filename or 'model.pdb'))
+                model_file.save(model_path)
+                model_paths.append(model_path)
+            
+            cluster_ener_path = os.path.join(app.config['UPLOAD_FOLDER'], 
+                                            secure_filename(haddock_cluster_ener_file.filename or 'cluster_ener.txt'))
+            haddock_cluster_ener_file.save(cluster_ener_path)
+            
+            cluster_rmsd_path = os.path.join(app.config['UPLOAD_FOLDER'], 
+                                            secure_filename(haddock_cluster_rmsd_file.filename or 'cluster_rmsd.txt'))
+            haddock_cluster_rmsd_file.save(cluster_rmsd_path)
+            
+            # Create HADDOCK animation
+            try:
+                adapter = HADDOCKAdapter()
+                animation_data = adapter.create_animation_data(
+                    monomer_path, model_paths, cluster_ener_path, 
+                    cluster_rmsd_path, top_k=haddock_num_models
+                )
+                
+                if len(animation_data['models']) == 0:
+                    return jsonify({'error': 'No models found in HADDOCK data'}), 500
+                
+                # Generate animation
+                output_filename = f"haddock_docking_{haddock_representation}.mp4"
+                output_path = os.path.join(app.config['OUTPUT_FOLDER'], output_filename)
+                
+                animator = HADDOCKAnimator(representation=haddock_representation)
+                animator.create_haddock_animation(animation_data, output_path, haddock_representation)
+                
+                if not os.path.exists(output_path):
+                    return jsonify({'error': 'Failed to generate HADDOCK animation'}), 500
+                
+                return jsonify({
+                    'success': True,
+                    'message': f'Autopose - HADDOCK protein-protein animation generated with {len(animation_data["models"])} model(s)',
+                    'filename': output_filename,
+                    'download_url': f'/download/{output_filename}'
+                })
+                
+            except Exception as e:
+                return jsonify({'error': f'Error generating HADDOCK animation: {str(e)}'}), 500
         else:
             # AutoDock4 mode (default)
             # Check if files were uploaded
@@ -392,6 +457,50 @@ def test_sample_cluspro():
         
     except Exception as e:
         return jsonify({'error': f'Error testing ClusPro sample: {str(e)}'}), 500
+
+@app.route('/test_sample_haddock')
+def test_sample_haddock():
+    """Test endpoint using HADDOCK sample files"""
+    try:
+        monomer_path = 'sample_haddock_monomer.pdb'
+        model_paths = ['sample_haddock_model_001.pdb']
+        cluster_ener_path = 'sample_haddock_cluster_ener.txt'
+        cluster_rmsd_path = 'sample_haddock_cluster_rmsd.txt'
+        
+        if not (os.path.exists(monomer_path) and all(os.path.exists(p) for p in model_paths) and 
+               os.path.exists(cluster_ener_path) and os.path.exists(cluster_rmsd_path)):
+            return jsonify({'error': 'Sample HADDOCK files not found'}), 404
+        
+        # Create HADDOCK animation data
+        adapter = HADDOCKAdapter()
+        animation_data = adapter.create_animation_data(
+            monomer_path, model_paths, cluster_ener_path, 
+            cluster_rmsd_path, top_k=1
+        )
+        
+        if len(animation_data['models']) == 0:
+            return jsonify({'error': 'No models found in HADDOCK data'}), 500
+        
+        # Generate animation
+        representation = 'cartoon'
+        output_filename = 'sample_haddock_docking.mp4'
+        output_path = os.path.join(app.config['OUTPUT_FOLDER'], output_filename)
+        
+        animator = HADDOCKAnimator(representation=representation)
+        animator.create_haddock_animation(animation_data, output_path, representation)
+        
+        if not os.path.exists(output_path):
+            return jsonify({'error': 'Failed to generate HADDOCK animation'}), 500
+        
+        return jsonify({
+            'success': True,
+            'message': f'Autopose - HADDOCK protein-protein animation generated with {len(animation_data["models"])} model(s)',
+            'filename': output_filename,
+            'download_url': f'/download/{output_filename}'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error testing HADDOCK sample: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5002)  # Changed port to 5002 to avoid conflict 

@@ -315,6 +315,13 @@
                                 <p>Protein-Protein Docking (Monomer + Models + Scores)</p>
                             </label>
                         </div>
+                        <div class="docking-engine-option">
+                            <input type="radio" id="engine_haddock" name="docking_engine" value="haddock">
+                            <label for="engine_haddock" class="option-content">
+                                <h3>HADDOCK 2.4</h3>
+                                <p>Protein-Protein Docking (Monomer + Models + Cluster Files)</p>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -387,6 +394,40 @@
                     </div>
                 </div>
 
+                <div class="upload-section" id="haddock-upload-section" style="display:none;">
+                    <div class="file-input-group">
+                        <label for="haddockMonomerFile">Monomer Structure File (PDB)</label>
+                        <input type="file" id="haddockMonomerFile" name="haddock_monomer_file" class="file-input" accept=".pdb">
+                    </div>
+                    <div class="file-input-group">
+                        <label for="haddockModelsFiles">HADDOCK Model Files (PDB)</label>
+                        <input type="file" id="haddockModelsFiles" name="haddock_models_files" class="file-input" accept=".pdb" multiple>
+                        <small>Select one or more docked model PDB files (e.g., best_X.pdb)</small>
+                    </div>
+                    <div class="file-input-group">
+                        <label for="haddockClusterEnerFile">Cluster Energy File (cluster_ener.txt)</label>
+                        <input type="file" id="haddockClusterEnerFile" name="haddock_cluster_ener_file" class="file-input" accept=".txt">
+                    </div>
+                    <div class="file-input-group">
+                        <label for="haddockClusterRmsdFile">Cluster RMSD File (cluster_rmsd.txt)</label>
+                        <input type="file" id="haddockClusterRmsdFile" name="haddock_cluster_rmsd_file" class="file-input" accept=".txt">
+                    </div>
+                    <div class="file-input-group">
+                        <label for="haddockNumModels">Number of Models to Animate:</label>
+                        <input type="number" id="haddockNumModels" name="haddock_num_models" min="1" max="5" value="1" style="width: 60px; margin-left: 10px;">
+                    </div>
+                    <div class="file-input-group">
+                        <label for="haddockRepresentation">Visualization Style:</label>
+                        <select id="haddockRepresentation" name="haddock_representation" style="width: 200px; margin-left: 10px;">
+                            <option value="cartoon">Cartoon</option>
+                            <option value="sticks">Sticks</option>
+                            <option value="surface">Surface</option>
+                            <option value="ribbon">Ribbon</option>
+                            <option value="spheres">Spheres</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="representation-section">
                     <label>Visualization Style</label>
                     <div class="representation-options">
@@ -446,6 +487,9 @@
             <button class="test-sample-btn" id="testClusProBtn" style="margin-top: 10px;">
                 🧪 Test ClusPro Sample
             </button>
+            <button class="test-sample-btn" id="testHaddockBtn" style="margin-top: 10px;">
+                🧪 Test HADDOCK Sample
+            </button>
 
             <div class="status" id="status"></div>
             <div class="loading" id="loading">
@@ -462,6 +506,7 @@
             const form = document.getElementById('uploadForm');
             const testBtn = document.getElementById('testSampleBtn');
             const testClusProBtn = document.getElementById('testClusProBtn');
+            const testHaddockBtn = document.getElementById('testHaddockBtn');
             const status = document.getElementById('status');
             const loading = document.getElementById('loading');
             const downloadSection = document.getElementById('downloadSection');
@@ -490,6 +535,7 @@
             const vinaSection = document.getElementById('vina-upload-section');
             const vinaOptionsSection = document.getElementById('vina-options-section');
             const clusproSection = document.getElementById('cluspro-upload-section');
+            const haddockSection = document.getElementById('haddock-upload-section');
             document.querySelectorAll('input[name="docking_engine"]').forEach(radio => {
                 radio.addEventListener('change', function() {
                     if (this.value === 'autodock4') {
@@ -497,6 +543,7 @@
                         vinaSection.style.display = 'none';
                         vinaOptionsSection.style.display = 'none';
                         clusproSection.style.display = 'none';
+                        haddockSection.style.display = 'none';
                         // Set required attributes
                         document.getElementById('pdbFile').required = true;
                         document.getElementById('dlgFile').required = true;
@@ -512,6 +559,7 @@
                         vinaSection.style.display = '';
                         vinaOptionsSection.style.display = '';
                         clusproSection.style.display = 'none';
+                        haddockSection.style.display = 'none';
                         // Set required attributes
                         document.getElementById('pdbFile').required = false;
                         document.getElementById('dlgFile').required = false;
@@ -527,6 +575,7 @@
                         vinaSection.style.display = 'none';
                         vinaOptionsSection.style.display = 'none';
                         clusproSection.style.display = '';
+                        haddockSection.style.display = 'none';
                         // Set required attributes
                         document.getElementById('pdbFile').required = false;
                         document.getElementById('dlgFile').required = false;
@@ -537,6 +586,26 @@
                         document.getElementById('clusproMonomerFile').required = true;
                         document.getElementById('clusproModelsFiles').required = true;
                         document.getElementById('clusproScoresFile').required = true;
+                    } else if (this.value === 'haddock') {
+                        ad4Section.style.display = 'none';
+                        vinaSection.style.display = 'none';
+                        vinaOptionsSection.style.display = 'none';
+                        clusproSection.style.display = 'none';
+                        haddockSection.style.display = '';
+                        // Set required attributes
+                        document.getElementById('pdbFile').required = false;
+                        document.getElementById('dlgFile').required = false;
+                        document.getElementById('vinaPdbFile').required = false;
+                        document.getElementById('vinaLigandFile').required = false;
+                        document.getElementById('vinaOutputFile').required = false;
+                        document.getElementById('vinaLogFile').required = false;
+                        document.getElementById('clusproMonomerFile').required = false;
+                        document.getElementById('clusproModelsFiles').required = false;
+                        document.getElementById('clusproScoresFile').required = false;
+                        document.getElementById('haddockMonomerFile').required = true;
+                        document.getElementById('haddockModelsFiles').required = true;
+                        document.getElementById('haddockClusterEnerFile').required = true;
+                        document.getElementById('haddockClusterRmsdFile').required = true;
                     }
                 });
             });
@@ -629,6 +698,30 @@
                 });
             });
 
+            testHaddockBtn.addEventListener('click', function() {
+                showStatus('info', 'Testing HADDOCK sample...');
+                showLoading(true);
+                hideDownloadSection();
+                hideSampleResults();
+
+                fetch('/test_sample_haddock')
+                .then(response => response.json())
+                .then(data => {
+                    showLoading(false);
+                    
+                    if (data.success) {
+                        showStatus('success', data.message);
+                        showDownloadSection(data.filename, data.download_url);
+                    } else {
+                        showStatus('error', data.error);
+                    }
+                })
+                .catch(error => {
+                    showLoading(false);
+                    showStatus('error', 'Network error: ' + error.message);
+                });
+            });
+
             function showStatus(type, message) {
                 status.className = `status ${type}`;
                 status.textContent = message;
@@ -640,6 +733,7 @@
                 generateBtn.disabled = show;
                 testBtn.disabled = show;
                 testClusProBtn.disabled = show;
+                testHaddockBtn.disabled = show;
             }
 
             function showDownloadSection(filename, downloadUrl, results) {

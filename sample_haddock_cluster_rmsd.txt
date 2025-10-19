@@ -1,0 +1,11 @@
+# HADDOCK Cluster RMSD Analysis
+# RMSD from overall lowest energy structure
+# Generated for Autopose testing
+#
+# Cluster  RMSD_from_overall_lowest
+  1        0.0
+  2        2.3
+  3        3.8
+  4        5.1
+  5        6.4
+

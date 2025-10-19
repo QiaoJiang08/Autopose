@@ -1,0 +1,11 @@
+# HADDOCK Cluster Energy Analysis
+# Cluster analysis for sample HADDOCK run
+# Generated for Autopose testing
+#
+# Cluster  Rank  HADDOCK-Score  Evdw      Eelec     Edesol    Eair
+  1        1     -125.3         -45.2     -78.9     -12.5     -8.7
+  2        2     -118.5         -42.8     -72.1     -10.3     -7.3
+  3        3     -112.7         -40.5     -68.4     -9.8      -6.0
+  4        4     -108.2         -38.2     -65.3     -9.1      -5.6
+  5        5     -105.8         -36.7     -63.2     -8.7      -5.2
+

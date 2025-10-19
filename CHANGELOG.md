@@ -5,11 +5,45 @@ All notable changes to Autopose will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-10-19
+
+### Added - HADDOCK 2.4 Support
+- **HADDOCK 2.4 Integration**: Complete support for HADDOCK protein-protein docking results
+- **Intelligent Mode Detection**: Auto-detects model quality (sparse/CA-only/interfacial)
+- **Dual Contact Metrics**: Heavy-atom (4.5Å) and CA-CA (8.0Å) contact analysis
+- **Visible Rotation**: Deterministic 35° rotation for clear molecular motion
+- **Production vs Demo Modes**: Automatic selection based on input data quality
+- **Pedagogical Enhancements**: Optional ≤2Å snap for educational demonstrations (demo mode only)
+- **Comprehensive Logging**: Self-explanatory output with model quality metrics
+- **Sample HADDOCK Files**: Complete test dataset included
+
+### Enhanced
+- **Animation Quality**: Increased to 60 frames (was 40) for smoother rotation
+- **Start Distance**: Extended to 35Å (was 25Å) for more dramatic docking approach
+- **Overlay Information**: Context-aware display with mode banners and debug info
+- **Single-Model Handling**: Special RMSD labeling "(top model)" for clarity
+- **RMSD Calculations**: Proper comparison against top-ranked model
+- **Interface Analysis**: Recomputed on exact final rendered frame
+
+### Fixed
+- **Final Frame Accuracy**: Chains now exactly match docked coordinates (< 1e-6 Å RMSD)
+- **Rigid-Body Rotation**: Proper Kabsch transform + SLERP interpolation
+- **Overlay Positioning**: Legend at bottom-right, overlays at top-left, no collisions
+- **Contact Calculations**: Dual metrics with proper alignment
+- **Camera Behavior**: Smooth zoom to interface in final 30% of animation
+- **Frame Hold**: 2-second hold on final frame for readability
+
+### Technical
+- **New Dependency**: scipy>=1.10.0 for Rotation and SLERP
+- **New Classes**: HADDOCKAdapter and HADDOCKAnimator
+- **Test Suite**: test_haddock.py with comprehensive validation
+- **Documentation**: HADDOCK_README.md with detailed usage guide
+
 ## [2.0.0] - 2025-01-20
 
 ### Added
-- **ClusPro Support**: Complete protein-protein docking animation support
-- **Interface Analysis**: Automatic detection and visualization of protein-protein interfaces
+- **ClusPro Support**: Complete protein-protein docking animation pipeline
+- **Interface Analysis**: Automatic detection and visualization of protein-protein contacts
 - **Multiple Model Animation**: Support for animating multiple ClusPro models with clustering information
 - **Enhanced Overlays**: Comprehensive energy breakdown (vdW, electrostatic, desolvation)
 - **Professional Visualization**: High-quality homodimer formation animations
@@ -34,41 +68,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Repository Structure**: Organized files for better maintainability
 - **Installation Process**: Streamlined setup with improved dependency management
 
-## [1.0.0] - 2024-12-01
+## [1.0.0] - 2024-11-15
 
 ### Added
-- **AutoDock4 Support**: Complete DLG file parsing and animation generation
-- **AutoDock Vina Support**: PDBQT file handling with multi-pose capabilities
-- **Web Interface**: User-friendly Flask-based web application
+- **AutoDock4 Support**: Parse DLG files and generate animations with overlays
+- **AutoDock Vina Support**: Multi-pose animation with separate/overlay modes
 - **Multiple Visualization Styles**: Sticks, ribbon, lines, spheres, surface, cartoon
-- **Professional Output**: 1080p MP4 videos with H.264 encoding
-- **Sample Data**: Test files for AutoDock4 and Vina workflows
+- **Web Interface**: Flask-based web UI for easy file upload and animation generation
+- **1080p Output**: Professional-quality MP4 video generation
+- **Sample Files**: Test data for AutoDock4 and Vina
 
-### Technical
-- **Core Animation Engine**: Matplotlib-based 3D molecular visualization
-- **Video Generation**: FFmpeg integration for high-quality MP4 output
-- **File Parsing**: Robust PDB, DLG, and PDBQT file handling
-- **Trajectory Generation**: Smooth interpolation between docking poses
-- **Overlay System**: Real-time display of docking metrics and scores
+### Initial Release
+- Core animation engine with Matplotlib 3D visualization
+- BioPython integration for PDB parsing
+- FFmpeg integration for video encoding
+- Comprehensive overlay information for docking scores
+- RESTful API endpoints for programmatic access
 
 ---
 
-## Release Notes Format
+## Version History
 
-### Version Numbering
-- **MAJOR** (2.0.0): Breaking changes, major new features
-- **MINOR** (2.1.0): New features, backward compatible
-- **PATCH** (2.0.1): Bug fixes, minor improvements
+- **v2.1.0**: HADDOCK 2.4 support with intelligent mode detection
+- **v2.0.0**: ClusPro support and project renamed to Autopose
+- **v1.0.0**: Initial release with AutoDock4 and Vina support
 
-### Release Types
-- **Feature Release**: New functionality (minor version bump)
-- **Bug Fix Release**: Bug fixes only (patch version bump)
-- **Major Release**: Significant changes or breaking changes (major version bump)
+---
 
-### Release Checklist
-- [ ] Update version numbers in all files
-- [ ] Update CHANGELOG.md with new changes
-- [ ] Create GitHub release with proper tags
-- [ ] Update documentation if needed
-- [ ] Test all functionality
-- [ ] Verify sample data works correctly
+**For detailed release notes, see [RELEASE_NOTES.md](RELEASE_NOTES.md)**
