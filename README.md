@@ -1,9 +1,14 @@
 # Autopose - Protein Docking Animation Generator
 
 A comprehensive web-based tool for generating MP4 video animations of protein-ligand and protein-protein docking results from AutoDock4, AutoDock Vina, ClusPro, and HADDOCK outputs.
-![](1.png)
-![](2.png)
-![](3.png)
+
+![AutoDock4 Protein-Ligand Docking Animation](1.png)
+
+![Vina Multi-Pose Overlay Animation](2.png)
+
+![ClusPro Homodimer Docking Animation](3.png)
+
+![HADDOCK Protein-Protein Docking Animation](4.png)
 ## 🚀 Features
 
 - **AutoDock4**: Parse DLG files, extract binding energies, generate animations with overlays
